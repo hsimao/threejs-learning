@@ -42,7 +42,7 @@ scene.add(camera);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 
-// 手動創建一個幾何
+// 手動創建一個幾何 BufferGeometry 用 setFromPoints
 const customGeometry = new THREE.BufferGeometry();
 
 // 三角形
@@ -66,10 +66,38 @@ for (let i = 0; i < 50; i++) {
 customGeometry.setFromPoints(points2);
 const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
 const customTriangle = new THREE.Line(customGeometry, lineMaterial);
-scene.add(customTriangle);
+// scene.add(customTriangle);
 
-// 鏡頭看著 customTriangle 元素
-camera.lookAt(customTriangle);
+// 手動創建一個幾何 BufferGeometry 用 setAttribute position
+const customGeometry2 = new THREE.BufferGeometry();
+// 幾何數量
+const count = 300;
+// const positionsArray = new Float32Array([
+//   // 1
+//   0, 0, 0,
+//   // 2
+//   0, 1, 0,
+//   // 3
+//   1, 0, 0
+// ]);
+const positionsArray = new Float32Array(count * 3 * 3);
+// 填充三角形座標
+for (let i = 0; i < count * 3 * 3; i++) {
+  positionsArray[i] = (Math.random() - 0.5) * 3;
+}
+
+const postitionsAtrribute = new THREE.BufferAttribute(positionsArray, 3);
+customGeometry2.setAttribute("position", postitionsAtrribute);
+
+const triangleMaterial = new THREE.MeshBasicMaterial({
+  color: 0xff0000,
+  wireframe: true
+});
+const triangle = new THREE.Mesh(customGeometry2, triangleMaterial);
+scene.add(triangle);
+
+// 鏡頭看著 triangle 元素
+camera.lookAt(triangle);
 
 // 參考線
 const axesHelper = new THREE.AxesHelper();
