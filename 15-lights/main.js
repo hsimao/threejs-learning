@@ -1,6 +1,7 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { RectAreaLightHelper } from "three/examples/jsm/helpers/RectAreaLightHelper.js";
 import * as dat from "dat.gui";
 import { resize } from "../utils";
 
@@ -18,6 +19,10 @@ const scene = new THREE.Scene();
 
 /**
  * Lights
+ * 性能比較, 效能消耗如下
+ * 高: SpotLight、RectAreaLight
+ * 中: DirectionalLight、PointLight
+ * 低: AmbientLight、HemisphereLight
  */
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
@@ -66,11 +71,24 @@ const spotLight = new THREE.SpotLight(
   0.5,
   10,
   Math.PI * 0.1, //  光線散射角度，最大為Math.PI/2。
-  0.25, // 周圍暈開效果, 聚光錐的半影衰減百分比。在0和1之間的值。默認為0。
+  1, // 周圍暈開效果, 聚光錐的半影衰減百分比。在0和1之間的值。默認為0。
   1
 );
 spotLight.position.set(0, 2, 3);
 scene.add(spotLight);
+
+// 必須要先把 target 加進去, 才可以控制 target
+scene.add(spotLight.target);
+spotLight.target.position.x = -0.25;
+spotLight.target.position.y = -0.25;
+// spotLight.target.position.z = 3;
+
+// Helpers
+scene.add(new THREE.SpotLightHelper(spotLight));
+scene.add(new RectAreaLightHelper(rectAreaLight));
+scene.add(new THREE.PointLightHelper(pointLight, 0.2));
+scene.add(new THREE.DirectionalLightHelper(directionalLight, 0.5));
+scene.add(new THREE.HemisphereLightHelper(hemisphereLight, 0.5));
 
 /**
  * Objects
