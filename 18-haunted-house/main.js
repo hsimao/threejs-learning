@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "dat.gui";
 
+const BG_COLOR = "#262837";
+
 /**
  * Base
  */
@@ -15,7 +17,60 @@ const canvas = document.querySelector(".webgl");
 // Scene
 const scene = new THREE.Scene();
 
+// 霧 Fog
+const fog = new THREE.Fog(BG_COLOR, 1, 15);
+scene.fog = fog;
+
 // Textures
+const textureLoader = new THREE.TextureLoader();
+const doorColorTexture = textureLoader.load("./textures/door/color.jpg");
+const doorAlphaTexture = textureLoader.load("./textures/door/alpha.jpg");
+const doorAmbientOcclusionTexture = textureLoader.load(
+  "./textures/door/ambientOcclusion.jpg"
+);
+const doorHeightTexture = textureLoader.load("./textures/door/height.jpg");
+const doorNormalTexture = textureLoader.load("./textures/door/normal.jpg");
+const doorMetalnessTexture = textureLoader.load(
+  "./textures/door/metalness.jpg"
+);
+const doorRoughnessTexture = textureLoader.load(
+  "./textures/door/roughness.jpg"
+);
+
+const bricksColorTexture = textureLoader.load("./textures/bricks/color.jpg");
+const bricksAmbientOcclusionTexture = textureLoader.load(
+  "./textures/bricks/ambientOcclusion.jpg"
+);
+const bricksNormalTexture = textureLoader.load("./textures/bricks/normal.jpg");
+const bricksRoughnessTexture = textureLoader.load(
+  "./textures/bricks/roughness.jpg"
+);
+
+// 草地材質
+const grassColorTexture = textureLoader.load("./textures/grass/color.jpg");
+const grassAmbientOcclusionTexture = textureLoader.load(
+  "./textures/grass/ambientOcclusion.jpg"
+);
+const grassNormalTexture = textureLoader.load("./textures/grass/normal.jpg");
+const grassRoughnessTexture = textureLoader.load(
+  "./textures/grass/roughness.jpg"
+);
+
+// 草地材質尺寸、repeat
+grassColorTexture.repeat.set(8, 8);
+grassAmbientOcclusionTexture.repeat.set(8, 8);
+grassNormalTexture.repeat.set(8, 8);
+grassRoughnessTexture.repeat.set(8, 8);
+
+grassColorTexture.wrapS = THREE.RepeatWrapping;
+grassAmbientOcclusionTexture.wrapS = THREE.RepeatWrapping;
+grassNormalTexture.wrapS = THREE.RepeatWrapping;
+grassRoughnessTexture.wrapS = THREE.RepeatWrapping;
+
+grassColorTexture.wrapT = THREE.RepeatWrapping;
+grassAmbientOcclusionTexture.wrapT = THREE.RepeatWrapping;
+grassNormalTexture.wrapT = THREE.RepeatWrapping;
+grassRoughnessTexture.wrapT = THREE.RepeatWrapping;
 
 /**
  * House
@@ -27,11 +82,23 @@ scene.add(house);
 
 // 牆
 const WALLS = { x: 4, y: 2.5, z: 4 };
-const wallsMaterial = new THREE.MeshStandardMaterial({ color: "#ac8e82" });
+const wallsMaterial = new THREE.MeshStandardMaterial({
+  map: bricksColorTexture,
+  aoMap: bricksAmbientOcclusionTexture,
+  normalMap: bricksNormalTexture,
+  roughnessMap: bricksRoughnessTexture
+});
+
 const walls = new THREE.Mesh(
   new THREE.BoxGeometry(WALLS.x, WALLS.y, WALLS.z),
   wallsMaterial
 );
+
+walls.geometry.setAttribute(
+  "uv2",
+  new THREE.Float32BufferAttribute(walls.geometry.attributes.uv.array, 2)
+);
+
 walls.position.y = WALLS.y / 2;
 house.add(walls);
 
@@ -47,9 +114,25 @@ house.add(roof);
 
 // 門
 const door = new THREE.Mesh(
-  new THREE.PlaneGeometry(2, 2),
-  new THREE.MeshStandardMaterial({ color: "#aa7b7b" })
+  new THREE.PlaneGeometry(2.2, 2.2, 100, 100),
+  new THREE.MeshStandardMaterial({
+    map: doorColorTexture,
+    transparent: true,
+    alphaMap: doorAlphaTexture, // 黑白透明材質
+    aoMap: doorAmbientOcclusionTexture, // 環境層次材質
+    displacementMap: doorHeightTexture, // 高度材質
+    displacementScale: 0.1,
+    normalMap: doorNormalTexture, // 燈光照射下會依照 RGB 值來反應曲面法線的材質
+    metalnessMap: doorMetalnessTexture, // 金屬感材質
+    roughnessMap: doorRoughnessTexture // 粗糙度材質
+  })
 );
+
+door.geometry.setAttribute(
+  "uv2",
+  new THREE.Float32BufferAttribute(door.geometry.attributes.uv.array, 2)
+);
+
 door.position.y = 1;
 door.position.z = WALLS.z / 2 + 0.01;
 house.add(door);
@@ -109,8 +192,19 @@ for (let i = 0; i < 50; i++) {
 // Floor
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(20, 20),
-  new THREE.MeshStandardMaterial({ color: "#a9c388" })
+  new THREE.MeshStandardMaterial({
+    map: grassColorTexture,
+    aoMap: grassAmbientOcclusionTexture, // 環境層次材質
+    normalMap: grassNormalTexture,
+    roughnessMap: grassRoughnessTexture
+  })
 );
+
+floor.geometry.setAttribute(
+  "uv2",
+  new THREE.Float32BufferAttribute(door.geometry.attributes.uv.array, 2)
+);
+
 floor.rotation.x = -Math.PI * 0.5;
 floor.position.y = 0;
 scene.add(floor);
@@ -119,19 +213,24 @@ scene.add(floor);
  * Lights
  */
 // 環境光 Ambient light
-const ambientLight = new THREE.AmbientLight("#ffffff", 0.5);
+const ambientLight = new THREE.AmbientLight("#b9d5ff", 0.12);
 gui.add(ambientLight, "intensity").min(0).max(1).step(0.001);
 scene.add(ambientLight);
 
 // 平行光 Directional light
-const moonLight = new THREE.DirectionalLight("#ffffff", 0.5);
+const moonLight = new THREE.DirectionalLight("#b9d5ff", 0.12);
 moonLight.position.set(4, 5, -2);
 gui.add(moonLight, "intensity").min(0).max(1).step(0.001);
 gui.add(moonLight.position, "x").min(-5).max(5).step(0.001);
 gui.add(moonLight.position, "y").min(-5).max(5).step(0.001);
 gui.add(moonLight.position, "z").min(-5).max(5).step(0.001);
 scene.add(moonLight);
-scene.add(new THREE.DirectionalLightHelper(moonLight, 1));
+// scene.add(new THREE.DirectionalLightHelper(moonLight, 1));
+
+// Door light
+const doorLight = new THREE.PointLight("#ff7d46", 1, 7);
+doorLight.position.set(0, 2.2, 2.7);
+house.add(doorLight);
 
 /**
  * Materials
@@ -190,6 +289,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(BG_COLOR);
 
 // 啟用陰影
 renderer.shadowMap.enabled = false;
