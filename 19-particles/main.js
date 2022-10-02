@@ -140,15 +140,13 @@ const tick = () => {
 
   // Update particles 波浪效果
   for (let i = 0; i < count; i++) {
-    const x = i * 3;
-    const y = x + 1;
-    const z = x + 2;
+    const i3 = i * 3;
 
     // 取出 x 值
-    const xValue = particlesGeometry.attributes.position.array[x];
+    const xValue = particlesGeometry.attributes.position.array[i3];
 
     // 更改每個粒子的 y 軸
-    particlesGeometry.attributes.position.array[y] = Math.sin(
+    particlesGeometry.attributes.position.array[i3 + 1] = Math.sin(
       elapsedTime + xValue
     );
   }
