@@ -8,7 +8,7 @@ import * as dat from "dat.gui";
 const gui = new dat.GUI();
 
 const parameters = {
-  materialColor: "#ffeded"
+  materialColor: "#ffeded",
 };
 
 gui.addColor(parameters, "materialColor").onChange(() => {
@@ -36,7 +36,7 @@ gradientTexture.magFilter = THREE.NearestFilter;
 // Material
 const material = new THREE.MeshToonMaterial({
   color: parameters.materialColor,
-  gradientMap: gradientTexture
+  gradientMap: gradientTexture,
 });
 
 // Meshes
@@ -74,7 +74,7 @@ scene.add(directionalLight);
  */
 const sizes = {
   width: window.innerWidth,
-  height: window.innerHeight
+  height: window.innerHeight,
 };
 
 window.addEventListener("resize", () => {
@@ -94,6 +94,10 @@ window.addEventListener("resize", () => {
 /**
  * Camera
  */
+// Group
+const cameraGroup = new THREE.Group();
+scene.add(cameraGroup);
+
 // Base camera
 const camera = new THREE.PerspectiveCamera(
   35,
@@ -102,7 +106,7 @@ const camera = new THREE.PerspectiveCamera(
   100
 );
 camera.position.z = 6;
-scene.add(camera);
+cameraGroup.add(camera);
 
 /**
  * Renderer
@@ -110,7 +114,7 @@ scene.add(camera);
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
   // 透明背景
-  alpha: true
+  alpha: true,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -124,18 +128,40 @@ window.addEventListener("scroll", () => {
 });
 
 /**
+ * Cursor
+ */
+const cursor = {
+  x: 0,
+  y: 0,
+};
+window.addEventListener("mousemove", (event) => {
+  // 轉換成要改變相機用的座標
+  cursor.x = event.clientX / sizes.width - 0.5;
+  cursor.y = event.clientY / sizes.height - 0.5;
+});
+
+/**
  * Animate
  */
 const clock = new THREE.Clock();
-
-const getCameraPosition = (scrollY) => {};
+let previousTime = 0;
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+  const deltaTime = elapsedTime - previousTime;
+  previousTime = deltaTime;
 
   // Animate camera
   const cameraY = (-scrollY / sizes.height) * objectsDistance;
   camera.position.y = cameraY;
+
+  // 滑鼠互動視差
+  const parallaxX = cursor.x * 0.5;
+  const parallaxY = -cursor.y * 0.5;
+  cameraGroup.position.x +=
+    (parallaxX - cameraGroup.position.x) * 0.05 * deltaTime;
+  cameraGroup.position.y +=
+    (parallaxY - cameraGroup.position.y) * 0.05 * deltaTime;
 
   // Animate meshes
   for (const mesh of sectionMeshes) {
