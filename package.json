@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cannon": "^0.6.2",
     "dat.gui": "^0.7.9",
     "gsap": "^3.11.1",
     "three": "^0.144.0",
