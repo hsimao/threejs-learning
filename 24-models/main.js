@@ -1,6 +1,9 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFloader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+
 import * as dat from "dat.gui";
 
 /**
@@ -14,6 +17,28 @@ const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new THREE.Scene();
+
+/**
+ * Models
+ */
+// 使用 draco 格式檔案大小比原本少了一半以上
+const dracoLoader = new DRACOLoader();
+// 從 three node_modules 裡面的 draco 檔案(three/examples/js/libs/draco/) 複製一份到專案靜態資源路徑來使用
+dracoLoader.setDecoderPath("./models/draco/");
+
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+
+let mixer = null;
+gltfLoader.load("./models/Fox/glTF/Fox.gltf", (gltf) => {
+  // models 動畫, mixer 需放在 tick 每幀更新
+  mixer = new THREE.AnimationMixer(gltf.scene);
+  const action = mixer.clipAction(gltf.animations[2]);
+  action.play();
+
+  gltf.scene.scale.set(0.025, 0.025, 0.025);
+  scene.add(gltf.scene);
+});
 
 /**
  * Floor
@@ -110,6 +135,9 @@ const tick = () => {
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - previousTime;
   previousTime = elapsedTime;
+
+  // Update mixer
+  if (mixer) mixer.update(deltaTime);
 
   // Update controls
   controls.update();
