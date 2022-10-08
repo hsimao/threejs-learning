@@ -38,6 +38,20 @@ const canvas = document.querySelector("canvas.webgl");
 const scene = new THREE.Scene();
 
 /**
+ * Sounds
+ */
+const hitSound = new Audio("./sounds/hit.mp3");
+
+const playHitSound = () => {
+  // 隨機音量
+  hitSound.volume = Math.random();
+  // 重頭開始播放
+  hitSound.currentTime = 0;
+  // play
+  hitSound.play();
+};
+
+/**
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
@@ -244,6 +258,14 @@ const createSphere = (radius, position) => {
     material: defaultMaterial
   });
   body.position.copy(position);
+
+  // 碰撞時 play 音效
+  body.addEventListener("collide", (collision) => {
+    // 撞擊強度
+    const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+    if (impactStrength > 1.5) playHitSound();
+  });
+
   world.addBody(body);
 
   // Save in objects to update
@@ -282,6 +304,14 @@ const createBox = (width, height, depth, position) => {
     material: defaultMaterial
   });
   body.position.copy(position);
+
+  // 碰撞時 play 音效
+  body.addEventListener("collide", (collision) => {
+    // 撞擊強度
+    const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+    if (impactStrength > 1.5) playHitSound();
+  });
+
   world.addBody(body);
 
   // Save in objects to update
