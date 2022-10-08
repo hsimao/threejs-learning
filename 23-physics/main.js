@@ -13,16 +13,16 @@ const debugObject = {
     createSphere(Math.random() * 0.5, {
       x: (Math.random() - 0.5) * 3,
       y: 3,
-      z: (Math.random() - 0.5) * 3,
+      z: (Math.random() - 0.5) * 3
     });
   },
   createBox: () => {
     createBox(Math.random(), Math.random(), Math.random(), {
       x: (Math.random() - 0.5) * 3,
       y: 3,
-      z: (Math.random() - 0.5) * 3,
+      z: (Math.random() - 0.5) * 3
     });
-  },
+  }
 };
 
 gui.add(debugObject, "createSphere");
@@ -49,7 +49,7 @@ const environmentMapTexture = cubeTextureLoader.load([
   "./textures/environmentMaps/0/py.png",
   "./textures/environmentMaps/0/ny.png",
   "./textures/environmentMaps/0/pz.png",
-  "./textures/environmentMaps/0/nz.png",
+  "./textures/environmentMaps/0/nz.png"
 ]);
 
 /**
@@ -57,6 +57,12 @@ const environmentMapTexture = cubeTextureLoader.load([
  */
 // World
 const world = new CANNON.World();
+
+// 性能優化
+world.broadphase = new CANNON.SAPBroadphase(world);
+// 沒有碰撞時啟用 sleep
+world.allowSleep = true;
+
 world.gravity.set(0, -9.92, 0);
 
 // 物理材質 Materials, 不同材質決定了碰撞反彈大小
@@ -72,7 +78,7 @@ const defaultContactMaterial = new CANNON.ContactMaterial(
     // 摩擦
     friction: 0.1,
     // 回彈值, 設定 1 彈回的高度不會變, 越小回彈幅度越小, 反之越大
-    restitution: 0.7,
+    restitution: 0.7
   }
 );
 world.addContactMaterial(defaultContactMaterial);
@@ -83,7 +89,7 @@ const sphereShape = new CANNON.Sphere(0.5);
 const sphereBody = new CANNON.Body({
   mass: 1,
   position: new CANNON.Vec3(0, 3, 0),
-  shape: sphereShape,
+  shape: sphereShape
 });
 
 // // 推擠效果
@@ -123,7 +129,7 @@ const floor = new THREE.Mesh(
     metalness: 0.3,
     roughness: 0.4,
     envMap: environmentMapTexture,
-    envMapIntensity: 0.5,
+    envMapIntensity: 0.5
   })
 );
 floor.receiveShadow = true;
@@ -161,7 +167,7 @@ scene.add(directionalLightCameraHelper);
  */
 const sizes = {
   width: window.innerWidth,
-  height: window.innerHeight,
+  height: window.innerHeight
 };
 
 window.addEventListener("resize", () => {
@@ -199,7 +205,7 @@ controls.enableDamping = true;
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
+  canvas: canvas
 });
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -216,7 +222,7 @@ const sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
 const sphereMaterial = new THREE.MeshStandardMaterial({
   metalness: 0.3,
   roughness: 0.4,
-  envMap: environmentMapTexture,
+  envMap: environmentMapTexture
 });
 
 const createSphere = (radius, position) => {
@@ -235,7 +241,7 @@ const createSphere = (radius, position) => {
     mass: 1,
     position: new CANNON.Vec3(0, 3, 0),
     shape,
-    material: defaultMaterial,
+    material: defaultMaterial
   });
   body.position.copy(position);
   world.addBody(body);
@@ -251,7 +257,7 @@ const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
 const boxMaterial = new THREE.MeshStandardMaterial({
   metalness: 0.3,
   roughness: 0.4,
-  envMap: environmentMapTexture,
+  envMap: environmentMapTexture
 });
 
 const createBox = (width, height, depth, position) => {
@@ -273,7 +279,7 @@ const createBox = (width, height, depth, position) => {
     mass: 1,
     position: new CANNON.Vec3(0, 3, 0),
     shape,
-    material: defaultMaterial,
+    material: defaultMaterial
   });
   body.position.copy(position);
   world.addBody(body);
@@ -295,8 +301,11 @@ const tick = () => {
 
   // Update physics world
   world.step(1 / 60, deltaTime, 3);
+
+  // 將物理座標同步到 three 元素上
   objectsToUpdate.forEach((object) => {
     object.mesh.position.copy(object.body.position);
+    object.mesh.quaternion.copy(object.body.quaternion);
   });
 
   // Update controls
