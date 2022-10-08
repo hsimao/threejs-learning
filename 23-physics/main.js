@@ -22,11 +22,22 @@ const debugObject = {
       y: 3,
       z: (Math.random() - 0.5) * 3
     });
+  },
+  reset: () => {
+    objectsToUpdate.forEach((object) => {
+      // remove event
+      object.body.removeEventListener("collide", playHitSound);
+      // remove 物理 body
+      world.removeBody(object.body);
+      // remove three mesh
+      scene.remove(object.mesh);
+    });
   }
 };
 
 gui.add(debugObject, "createSphere");
 gui.add(debugObject, "createBox");
+gui.add(debugObject, "reset");
 
 /**
  * Base
@@ -42,13 +53,18 @@ const scene = new THREE.Scene();
  */
 const hitSound = new Audio("./sounds/hit.mp3");
 
-const playHitSound = () => {
-  // 隨機音量
-  hitSound.volume = Math.random();
-  // 重頭開始播放
-  hitSound.currentTime = 0;
-  // play
-  hitSound.play();
+const playHitSound = (collision) => {
+  // 撞擊強度
+  const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+
+  if (impactStrength > 1.5) {
+    // 隨機音量
+    hitSound.volume = Math.random();
+    // 重頭開始播放
+    hitSound.currentTime = 0;
+    // play
+    hitSound.play();
+  }
 };
 
 /**
@@ -260,11 +276,7 @@ const createSphere = (radius, position) => {
   body.position.copy(position);
 
   // 碰撞時 play 音效
-  body.addEventListener("collide", (collision) => {
-    // 撞擊強度
-    const impactStrength = collision.contact.getImpactVelocityAlongNormal();
-    if (impactStrength > 1.5) playHitSound();
-  });
+  body.addEventListener("collide", playHitSound);
 
   world.addBody(body);
 
@@ -306,11 +318,7 @@ const createBox = (width, height, depth, position) => {
   body.position.copy(position);
 
   // 碰撞時 play 音效
-  body.addEventListener("collide", (collision) => {
-    // 撞擊強度
-    const impactStrength = collision.contact.getImpactVelocityAlongNormal();
-    if (impactStrength > 1.5) playHitSound();
-  });
+  body.addEventListener("collide", playHitSound);
 
   world.addBody(body);
 
