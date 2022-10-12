@@ -8,6 +8,7 @@ export default class Renderer {
     this.scene = this.experience.scene;
     this.canvas = this.experience.canvas;
     this.camera = this.experience.camera;
+    this.camera.instance.position.z = 3;
 
     this.setInstance();
   }
