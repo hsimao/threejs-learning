@@ -21,4 +21,9 @@ export default [
     type: "texture",
     path: "./static/textures/dirt/normal.jpg",
   },
+  {
+    name: "foxModel",
+    type: "gltfModel",
+    path: "./static/models/Fox/glTF/Fox.gltf",
+  },
 ];
