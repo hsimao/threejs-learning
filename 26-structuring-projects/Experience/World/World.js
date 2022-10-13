@@ -6,6 +6,7 @@ export default class World {
   constructor() {
     this.experience = new Experience();
     this.scene = this.experience.scene;
+    this.resources = this.experience.resources;
 
     const testMesh = new THREE.Mesh(
       new THREE.BoxGeometry(1, 1, 1),
@@ -14,7 +15,12 @@ export default class World {
 
     this.scene.add(testMesh);
 
-    // Setup
-    this.environment = new Environment();
+    // 資源加載完才設置環境
+    this.resources.on("ready", () => {
+      console.warn("resources are ready");
+
+      // Setup
+      this.environment = new Environment();
+    });
   }
 }
