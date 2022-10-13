@@ -5,6 +5,7 @@ import Resources from "./Utils/Resources";
 import Camera from "./Camera";
 import Renderer from "./Renderer";
 import World from "./World/World";
+import Debug from "./Utils/Debug";
 import sources from "./sources";
 
 let instance = null;
@@ -19,9 +20,9 @@ export default class Experience {
 
     // Options
     this.canvas = canvas;
-    console.warn("Here starts a great experience");
 
     // Setup
+    this.debug = new Debug();
     this.sizes = new Sizes();
     this.time = new Time();
     this.resources = new Resources(sources);

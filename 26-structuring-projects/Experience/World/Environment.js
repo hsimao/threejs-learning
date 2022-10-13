@@ -6,9 +6,11 @@ export default class Environment {
     this.experience = new Experience();
     this.scene = this.experience.scene;
     this.resources = this.experience.resources;
+    this.debug = this.experience.debug;
 
     this.setSunLight();
     this.setEnvironmentMap();
+    this.setDebug();
   }
 
   setSunLight() {
@@ -30,6 +32,50 @@ export default class Environment {
     this.scene.environment = this.environmentMap.texture;
 
     this.updateAllMaterials();
+  }
+
+  setDebug() {
+    if (this.debug.active) {
+      this.debugFolder = this.debug.ui.addFolder("environment");
+
+      // environment map intensity
+      this.debugFolder
+        .add(this.environmentMap, "intensity")
+        .name("Env map itensity")
+        .min(0)
+        .max(4)
+        .step(0.001)
+        .onChange(() => this.updateAllMaterials());
+
+      // light helper
+      const lightHelper = new THREE.DirectionalLightHelper(this.sunLight, 0.5);
+      this.scene.add(lightHelper);
+      this.debugFolder.add(lightHelper, "visible").name("Sun light helper");
+
+      // sun light intensity
+      this.debugFolder
+        .add(this.sunLight, "intensity")
+        .name("Sun light intensity")
+        .min(0)
+        .max(10)
+        .step(0.001);
+
+      // sun light position x
+      this.debugFolder
+        .add(this.sunLight.position, "x")
+        .name("Sun light X")
+        .min(-5)
+        .max(5)
+        .step(0.001);
+
+      // sun light position y
+      this.debugFolder
+        .add(this.sunLight.position, "y")
+        .name("Sun light Y")
+        .min(-5)
+        .max(5)
+        .step(0.001);
+    }
   }
 
   updateAllMaterials() {
