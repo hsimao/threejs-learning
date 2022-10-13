@@ -5,7 +5,9 @@ export default class Sizes extends EventEmitter {
     super();
 
     this.init();
-    window.addEventListener("resize", this.init.bind(this));
+
+    this._init = this.init.bind(this);
+    window.addEventListener("resize", this._init);
   }
 
   init() {
@@ -18,6 +20,6 @@ export default class Sizes extends EventEmitter {
   }
 
   destroy() {
-    window.removeEventListener("resize", this.init);
+    window.removeEventListener("resize", this._init);
   }
 }
