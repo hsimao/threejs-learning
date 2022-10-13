@@ -40,7 +40,6 @@ export default class Resources extends EventEmitter {
             this.sourceLoaded(source, file)
           );
           break;
-
         case "cubeTexture":
           this.loaders.cubeTextureLoader.load(source.path, (file) =>
             this.sourceLoaded(source, file)
