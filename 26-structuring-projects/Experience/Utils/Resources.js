@@ -34,17 +34,18 @@ export default class Resources extends EventEmitter {
           this.loaders.gltfLoader.load(source.path, (file) =>
             this.sourceLoaded(source, file)
           );
-          return;
+          break;
         case "texture":
           this.loaders.textureLoader.load(source.path, (file) =>
             this.sourceLoaded(source, file)
           );
-          return;
+          break;
+
         case "cubeTexture":
           this.loaders.cubeTextureLoader.load(source.path, (file) =>
             this.sourceLoaded(source, file)
           );
-          return;
+          break;
       }
     }
   }
